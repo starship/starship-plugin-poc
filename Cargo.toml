@@ -1,0 +1,17 @@
+[package]
+name = "starship-plugins-poc"
+version = "0.1.0"
+authors = ["Matan Kushner <hello@matchai.dev>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[workspace]
+members = ["crates/*/"]
+
+[dependencies]
+starship-plugin-git = { path = "./crates/starship-plugin-git" }
+starship-plugin = { path = "./crates/starship-plugin" }
+
+bincode = "1.3.3"
+serde = { version = "1.0", features = ["derive"] }

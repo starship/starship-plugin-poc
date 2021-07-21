@@ -1,0 +1,8 @@
+[package]
+name = "starship-plugin-git"
+version = "0.1.0"
+authors = ["Matan Kushner <hello@matchai.dev>"]
+edition = "2018"
+
+[dependencies]
+starship-plugin = { path = "../starship-plugin" }
