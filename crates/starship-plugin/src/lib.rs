@@ -16,16 +16,24 @@ impl TryFrom<Vec<u8>> for Message {
     }
 }
 
-pub struct Sender {
-    stdout: Stdout,
-    stdin: Stdin,
+pub struct Sender<R, W> {
+    pub read: R,
+    pub write: W,
 }
 
-impl Sender {
-    pub fn new() -> Self {
+impl Sender<Stdin, Stdout> {
+    pub fn new_child() -> Self {
+        let stdin = io::stdin();
+        let stdout = io::stdout();
+        Sender::from(stdin, stdout)
+    }
+}
+
+impl<R: Read, W: Write> Sender<R, W> {
+    pub fn from(read: R, write: W) -> Self {
         Self {
-            stdout: io::stdout(),
-            stdin: io::stdin(),
+            read,
+            write,
         }
     }
 
@@ -38,19 +46,19 @@ impl Sender {
         self.send(Message::Result(result))
     }
 
-    fn send(&mut self, message: Message) -> Result<(), Box<dyn Error>> {
+    pub fn send(&mut self, message: Message) -> Result<(), Box<dyn Error>> {
         let message = bincode::serialize(&message)?;
         let message_size: u32 = message.len().try_into()?;
 
-        let handle = self.stdout.borrow_mut();
+        let handle = self.write.borrow_mut();
         handle.write_all(&u32::to_le_bytes(message_size))?;
         handle.write_all(&message)?;
         handle.flush()?;
         Ok(())
     }
 
-    fn receive<T: DeserializeOwned>(&mut self) -> Result<T, Box<dyn Error>> {
-        let handle = self.stdin.borrow_mut();
+    pub fn receive<T: DeserializeOwned>(&mut self) -> Result<T, Box<dyn Error>> {
+        let handle = self.read.borrow_mut();
 
         let mut size_buffer = [0; 4];
         handle.read_exact(&mut size_buffer)?;

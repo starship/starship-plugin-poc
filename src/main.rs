@@ -1,11 +1,11 @@
 use std::{
-    convert::{TryFrom, TryInto},
+    convert::{TryFrom},
     error::Error,
-    io::{BufReader, BufWriter, Read, Write},
+    io::{Write},
     process::{Command, Stdio},
 };
 
-use starship_plugin::Message;
+use starship_plugin::{Message, Sender};
 
 fn main() -> Result<(), Box<dyn Error>> {
     let process = Command::new("target/debug/starship-plugin-git")
@@ -14,20 +14,12 @@ fn main() -> Result<(), Box<dyn Error>> {
         .spawn()?;
 
     let stdout = process.stdout.expect("Could not capture stdout");
-    let mut reader = BufReader::new(stdout);
-
     let stdin = process.stdin.expect("Could not capture stdin");
-    let mut writer = BufWriter::new(stdin);
+    let mut sender = Sender::from(stdout, stdin);
 
     loop {
-        let mut size_buffer = [0; 4];
-        reader.read_exact(&mut size_buffer)?;
-        let size = u32::from_le_bytes(size_buffer);
-    
-        let mut msg_buffer = vec![0; size.try_into()?];
-        reader.read_exact(&mut msg_buffer)?;
-    
-        let message = Message::try_from(msg_buffer)?;
+        let message = &sender.receive()?;
+
         match message {
             Message::CurrentDir => {
                 let current_dir = std::env::current_dir()
@@ -37,6 +29,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 let message = bincode::serialize(&current_dir).unwrap();
                 let message_size = u32::try_from(message.len())?;
     
+                let writer = &mut sender.write;
                 writer.write_all(&u32::to_le_bytes(message_size))?;
                 writer.write_all(&message)?;
                 writer.flush()?;
