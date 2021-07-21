@@ -1,14 +1,11 @@
-use std::{
-    convert::{TryFrom, TryInto},
-    error::Error,
-    io::{self, Read, Stdin, Stdout, Write},
-};
+use std::{borrow::BorrowMut, convert::{TryFrom, TryInto}, error::Error, io::{self, Read, Stdin, Stdout, Write}};
 
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Serialize, de::DeserializeOwned};
 
 #[derive(Serialize, Deserialize, Debug)]
 pub enum Message {
     CurrentDir,
+    Result(String)
 }
 
 impl TryFrom<Vec<u8>> for Message {
@@ -34,8 +31,26 @@ impl Sender {
 
     pub fn current_dir(&mut self) -> Result<String, Box<dyn Error>> {
         self.send(Message::CurrentDir)?;
+        self.receive()
+    }
 
-        let mut handle = self.stdin.lock();
+    pub fn result(&mut self, result: String) -> Result<(), Box<dyn Error>> {
+        self.send(Message::Result(result))
+    }
+
+    fn send(&mut self, message: Message) -> Result<(), Box<dyn Error>> {
+        let message = bincode::serialize(&message)?;
+        let message_size: u32 = message.len().try_into()?;
+
+        let handle = self.stdout.borrow_mut();
+        handle.write_all(&u32::to_le_bytes(message_size))?;
+        handle.write_all(&message)?;
+        handle.flush()?;
+        Ok(())
+    }
+
+    fn receive<T: DeserializeOwned>(&mut self) -> Result<T, Box<dyn Error>> {
+        let handle = self.stdin.borrow_mut();
 
         let mut size_buffer = [0; 4];
         handle.read_exact(&mut size_buffer)?;
@@ -45,16 +60,5 @@ impl Sender {
         handle.read_exact(&mut content_buffer)?;
 
         bincode::deserialize(&content_buffer).map_err(Into::into)
-    }
-
-    fn send(&mut self, message: Message) -> Result<(), Box<dyn Error>> {
-        let message = bincode::serialize(&message)?;
-        let message_size: u32 = message.len().try_into()?;
-
-        let mut handle = self.stdout.lock();
-        handle.write_all(&u32::to_le_bytes(message_size))?;
-        handle.write_all(&message)?;
-        handle.flush()?;
-        Ok(())
     }
 }
