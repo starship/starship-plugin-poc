@@ -21,7 +21,7 @@ impl PluginService for Service {
         format!("Hello {}", name)
     }
 
-    async fn output(self, _:Context, output: String) {
+    async fn output(self, _: Context, output: String) {
         println!("{}", output);
     }
 }

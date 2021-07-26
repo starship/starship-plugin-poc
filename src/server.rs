@@ -11,7 +11,7 @@ use plugin::{ChildProcess, PluginService, Service};
 async fn main() -> Result<(), Box<dyn Error>> {
     let codec_builder = LengthDelimitedCodec::builder();
     let child_process = ChildProcess::new();
-    
+
     let framed = codec_builder.new_framed(child_process);
     let transport = transport::new(framed, Bincode::default());
     let server = BaseChannel::with_defaults(transport);

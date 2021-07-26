@@ -16,9 +16,12 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let transport = transport::new(codec_builder.new_framed(process), Bincode::default());
 
     let client = PluginServiceClient::new(Default::default(), transport).spawn();
-    
-    let output = client.hello(context::current(), "Server".to_string()).await?;
+
+    let output = client
+        .hello(context::current(), "Server".to_string())
+        .await?;
     client.output(context::current(), output).await?;
 
+    println!("Done!");
     Ok(())
 }
