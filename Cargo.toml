@@ -1,0 +1,26 @@
+[package]
+name = "tarpc-sandbox"
+version = "0.1.0"
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+futures = "0.3.16"
+serde = "1.0.126"
+tarpc = { version = "0.26", features = ["tokio1", "serde-transport", "serde1", "tcp"] }
+tokio = {version = "1.0", features = ["macros", "io-std", "process"]}
+tokio-serde = { version = "0.8.0", features = ["bincode"] }
+tokio-util = { version = "0.6.7", features = ["codec"] }
+
+[[bin]]
+name = "client"
+path = "src/client.rs"
+
+[[bin]]
+name = "server"
+path = "src/server.rs"
+
+[lib]
+name = "plugin"
+path = "src/lib.rs"
