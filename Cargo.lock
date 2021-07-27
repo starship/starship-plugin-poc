@@ -491,6 +491,18 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f173ac3d1a7e3b28003f40de0b5ce7fe2710f9b9dc3fc38664cebee46b3b6527"
 
 [[package]]
+name = "starship-rpc-plugin"
+version = "0.1.0"
+dependencies = [
+ "futures",
+ "serde",
+ "tarpc",
+ "tokio",
+ "tokio-serde",
+ "tokio-util",
+]
+
+[[package]]
 name = "static_assertions"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -540,18 +552,6 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn",
-]
-
-[[package]]
-name = "tarpc-sandbox"
-version = "0.1.0"
-dependencies = [
- "futures",
- "serde",
- "tarpc",
- "tokio",
- "tokio-serde",
- "tokio-util",
 ]
 
 [[package]]
