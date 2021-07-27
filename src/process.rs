@@ -4,6 +4,8 @@ use tokio::{
     process::Command,
 };
 
+/// A wrapper around tokio's Child IO types implementing `AsyncRead` and `AsyncWrite`,
+/// so that we can use it for clients in our piping tarpc protocol.
 #[derive(Debug)]
 pub struct ChildProcess {
     stdin: tokio::process::ChildStdin,
@@ -58,6 +60,8 @@ impl AsyncWrite for ChildProcess {
     }
 }
 
+/// A wrapper around tokio's Process IO types implementing `AsyncRead` and `AsyncWrite`,
+/// so that we can use it as the server in our piping tarpc protocol.
 pub struct Process {
     stdin: tokio::io::Stdin,
     stdout: tokio::io::Stdout,

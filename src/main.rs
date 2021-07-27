@@ -12,9 +12,11 @@ use starship_rpc_plugin::{ChildProcess, PluginService};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
-    let codec_builder = LengthDelimitedCodec::builder();
     let child_process = ChildProcess::new("target/debug/starship-plugin-directory");
 
+    // Spawn an instance of the plugin binary, listening to its stdout for RPC calls
+    // and replying through stdin.
+    let codec_builder = LengthDelimitedCodec::builder();
     let framed = codec_builder.new_framed(child_process);
     let transport = transport::new(framed, Bincode::default());
     let server = BaseChannel::with_defaults(transport);
@@ -27,6 +29,9 @@ async fn main() -> Result<(), Box<dyn Error>> {
 #[derive(Clone)]
 pub struct Service;
 
+// Implement the `PluginService` trait defined in the library module, forming an
+// API contract between the server and client using Rust's strong types.
+// The types are (de)serialized with Bincode, so we can use nearly any types.
 #[tarpc::server]
 impl PluginService for Service {
     async fn current_dir(self, _: Context) -> PathBuf {
