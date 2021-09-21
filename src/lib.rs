@@ -1,8 +1,8 @@
-use std::{pin::Pin, task::Poll};
+use std::{ffi::OsStr, pin::Pin, process::Stdio, task::Poll};
 
 use tokio::{
     io::{AsyncRead, AsyncWrite, Stdin, Stdout},
-    process::Child,
+    process::{ChildStdin, ChildStdout, Command},
 };
 
 /// This is the service definition. It looks a lot like a trait definition.
@@ -15,12 +15,22 @@ pub trait Plugin {
 /// An instance of merged child process stdio used to implement `AsyncRead` and
 /// `AsyncWrite`, as required by `serde_transport` for use as a transport for tarpc.
 pub struct MergedChildIO {
-    inner: Child,
+    stdout: ChildStdout,
+    stdin: ChildStdin,
 }
 
 impl MergedChildIO {
-    pub fn new(child: Child) -> Self {
-        MergedChildIO { inner: child }
+    pub fn new<S: AsRef<OsStr>>(program: S) -> Self {
+        let command = Command::new(program)
+            .stdin(Stdio::piped())
+            .stdout(Stdio::piped())
+            .spawn()
+            .expect("child spawned correctly");
+
+        let stdin = command.stdin.expect("Could not capture stdin");
+        let stdout = command.stdout.expect("Could not capture stdout");
+
+        Self { stdin, stdout }
     }
 }
 
@@ -30,8 +40,7 @@ impl AsyncRead for MergedChildIO {
         cx: &mut std::task::Context<'_>,
         buf: &mut tokio::io::ReadBuf<'_>,
     ) -> Poll<std::io::Result<()>> {
-        let stdout = self.inner.stdout.as_mut().expect("stdout");
-        AsyncRead::poll_read(Pin::new(stdout), cx, buf)
+        Pin::new(&mut self.stdout).poll_read(cx, buf)
     }
 }
 
@@ -41,24 +50,21 @@ impl AsyncWrite for MergedChildIO {
         cx: &mut std::task::Context<'_>,
         buf: &[u8],
     ) -> Poll<Result<usize, std::io::Error>> {
-        let stdin = self.inner.stdin.as_mut().expect("stdin");
-        AsyncWrite::poll_write(Pin::new(stdin), cx, buf)
+        Pin::new(&mut self.stdin).poll_write(cx, buf)
     }
 
     fn poll_flush(
         mut self: Pin<&mut Self>,
         cx: &mut std::task::Context<'_>,
     ) -> Poll<Result<(), std::io::Error>> {
-        let stdin = self.inner.stdin.as_mut().expect("stdin");
-        AsyncWrite::poll_flush(Pin::new(stdin), cx)
+        Pin::new(&mut self.stdin).poll_flush(cx)
     }
 
     fn poll_shutdown(
         mut self: Pin<&mut Self>,
         cx: &mut std::task::Context<'_>,
     ) -> Poll<Result<(), std::io::Error>> {
-        let stdin = self.inner.stdin.as_mut().expect("stdin");
-        AsyncWrite::poll_shutdown(Pin::new(stdin), cx)
+        Pin::new(&mut self.stdin).poll_shutdown(cx)
     }
 }
 
@@ -84,7 +90,7 @@ impl AsyncRead for MergedProcessIO {
         cx: &mut std::task::Context<'_>,
         buf: &mut tokio::io::ReadBuf<'_>,
     ) -> Poll<std::io::Result<()>> {
-        AsyncRead::poll_read(Pin::new(&mut self.stdin), cx, buf)
+        Pin::new(&mut self.stdin).poll_read(cx, buf)
     }
 }
 
@@ -94,20 +100,20 @@ impl AsyncWrite for MergedProcessIO {
         cx: &mut std::task::Context<'_>,
         buf: &[u8],
     ) -> Poll<Result<usize, std::io::Error>> {
-        AsyncWrite::poll_write(Pin::new(&mut self.stdout), cx, buf)
+        Pin::new(&mut self.stdout).poll_write(cx, buf)
     }
 
     fn poll_flush(
         mut self: Pin<&mut Self>,
         cx: &mut std::task::Context<'_>,
     ) -> Poll<Result<(), std::io::Error>> {
-        AsyncWrite::poll_flush(Pin::new(&mut self.stdout), cx)
+        Pin::new(&mut self.stdout).poll_flush(cx)
     }
 
     fn poll_shutdown(
         mut self: Pin<&mut Self>,
         cx: &mut std::task::Context<'_>,
     ) -> Poll<Result<(), std::io::Error>> {
-        AsyncWrite::poll_shutdown(Pin::new(&mut self.stdout), cx)
+        Pin::new(&mut self.stdout).poll_shutdown(cx)
     }
 }
