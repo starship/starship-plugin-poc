@@ -1,7 +1,7 @@
 use std::{pin::Pin, task::Poll};
 
 use tokio::{
-    io::{AsyncRead, AsyncWrite},
+    io::{AsyncRead, AsyncWrite, Stdin, Stdout},
     process::Child,
 };
 
@@ -59,5 +59,55 @@ impl AsyncWrite for MergedChildIO {
     ) -> Poll<Result<(), std::io::Error>> {
         let stdin = self.inner.stdin.as_mut().expect("stdin");
         AsyncWrite::poll_shutdown(Pin::new(stdin), cx)
+    }
+}
+
+/// An instance of merged child process stdio used to implement `AsyncRead` and
+/// `AsyncWrite`, as required by `serde_transport` for use as a transport for tarpc.
+pub struct MergedProcessIO {
+    stdin: Stdin,
+    stdout: Stdout,
+}
+
+impl MergedProcessIO {
+    pub fn new() -> Self {
+        MergedProcessIO {
+            stdin: tokio::io::stdin(),
+            stdout: tokio::io::stdout(),
+        }
+    }
+}
+
+impl AsyncRead for MergedProcessIO {
+    fn poll_read(
+        mut self: std::pin::Pin<&mut Self>,
+        cx: &mut std::task::Context<'_>,
+        buf: &mut tokio::io::ReadBuf<'_>,
+    ) -> Poll<std::io::Result<()>> {
+        AsyncRead::poll_read(Pin::new(&mut self.stdin), cx, buf)
+    }
+}
+
+impl AsyncWrite for MergedProcessIO {
+    fn poll_write(
+        mut self: Pin<&mut Self>,
+        cx: &mut std::task::Context<'_>,
+        buf: &[u8],
+    ) -> Poll<Result<usize, std::io::Error>> {
+        AsyncWrite::poll_write(Pin::new(&mut self.stdout), cx, buf)
+    }
+
+    fn poll_flush(
+        mut self: Pin<&mut Self>,
+        cx: &mut std::task::Context<'_>,
+    ) -> Poll<Result<(), std::io::Error>> {
+        AsyncWrite::poll_flush(Pin::new(&mut self.stdout), cx)
+    }
+
+    fn poll_shutdown(
+        mut self: Pin<&mut Self>,
+        cx: &mut std::task::Context<'_>,
+    ) -> Poll<Result<(), std::io::Error>> {
+        AsyncWrite::poll_shutdown(Pin::new(&mut self.stdout), cx)
     }
 }
