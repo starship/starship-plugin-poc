@@ -17,6 +17,7 @@ struct PluginServer;
 #[tarpc::server]
 impl Plugin for PluginServer {
     async fn hello(self, _: context::Context, name: String) -> String {
+        println!("Hey {}", name);
         format!("Hello, {}!", name)
     }
 }
@@ -24,20 +25,18 @@ impl Plugin for PluginServer {
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     let codec_builder = LengthDelimitedCodec::builder();
-    tokio::spawn(async move {
-        let command = Command::new("./target/debug/client")
-            .stdin(Stdio::piped())
-            .stdout(Stdio::piped())
-            .stderr(Stdio::piped())
-            .spawn()
-            .expect("child spawned correctly");
+    let command = Command::new("./target/debug/client")
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .spawn()
+        .expect("child spawned correctly");
 
-        let merged_io = MergedChildIO::new(command);
-        let framed = codec_builder.new_framed(merged_io);
-        let transport = serde_transport::new(framed, Bincode::default());
-        let fut = BaseChannel::with_defaults(transport).execute(PluginServer.serve());
-        tokio::spawn(fut);
-    });
+    let merged_io = MergedChildIO::new(command);
+    let framed = codec_builder.new_framed(merged_io);
+    let transport = serde_transport::new(framed, Bincode::default());
+    let fut = BaseChannel::with_defaults(transport).execute(PluginServer.serve());
+    tokio::spawn(fut).await?;
 
     Ok(())
 }
