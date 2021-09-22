@@ -24,8 +24,6 @@ impl MergedChildIO {
             // Allow the parent process to interface via stdin/stdout for IPC
             .stdin(Stdio::piped())
             .stdout(Stdio::piped())
-            // Required for Child processes not to keep running
-            .kill_on_drop(true)
             .spawn()
             .expect("child spawned correctly");
 
