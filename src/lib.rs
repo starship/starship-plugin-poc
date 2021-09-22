@@ -1,5 +1,4 @@
 use std::{ffi::OsStr, pin::Pin, process::Stdio, task::Poll};
-
 use tokio::{
     io::{AsyncRead, AsyncWrite, Stdin, Stdout},
     process::{ChildStdin, ChildStdout, Command},
@@ -12,7 +11,7 @@ pub trait Plugin {
     async fn hello(name: String) -> String;
 }
 
-/// An instance of merged child process stdio used to implement `AsyncRead` and
+/// Merged stdin and stdout of a child process to provide `AsyncRead` and
 /// `AsyncWrite`, as required by `serde_transport` for use as a transport for tarpc.
 pub struct MergedChildIO {
     stdout: ChildStdout,
@@ -22,8 +21,11 @@ pub struct MergedChildIO {
 impl MergedChildIO {
     pub fn new<S: AsRef<OsStr>>(program: S) -> Self {
         let command = Command::new(program)
+            // Allow the parent process to interface via stdin/stdout for IPC
             .stdin(Stdio::piped())
             .stdout(Stdio::piped())
+            // Required for Child processes not to keep running
+            .kill_on_drop(true)
             .spawn()
             .expect("child spawned correctly");
 

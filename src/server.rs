@@ -1,11 +1,8 @@
-use std::process::Stdio;
-
 use service::{MergedChildIO, Plugin, PluginClient};
 use tarpc::{
     context, serde_transport,
     server::{BaseChannel, Channel},
 };
-use tokio::process::Command;
 use tokio_serde::formats::Bincode;
 use tokio_util::codec::LengthDelimitedCodec;
 
@@ -25,7 +22,7 @@ impl Plugin for PluginServer {
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     let merged_io = MergedChildIO::new("./target/debug/client");
-    
+
     let codec_builder = LengthDelimitedCodec::builder();
     let framed = codec_builder.new_framed(merged_io);
     let transport = serde_transport::new(framed, Bincode::default());
