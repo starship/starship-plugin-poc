@@ -12,10 +12,12 @@ edition = "2018"
 [dependencies]
 anyhow = "1"
 futures = "0.3"
-tarpc = { version = "0.26", features = ["full"] }
-tokio = { version = "1", features = ["full"] }
+log = "0.4.14"
+tarpc = { version = "0.26", features = ["serde1", "serde-transport", "tcp"] }
+tokio = { version = "1", features = ["macros"] }
 tokio-serde = { version = "0.8.0", features = ["bincode"] }
-tokio-util = { version = "0.6.8", features = ["codec"] }
+tracing = "0.1.28"
+tracing-subscriber = "0.2.24"
 
 [lib]
 name = "service"

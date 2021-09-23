@@ -1,19 +1,23 @@
-use service::{MergedProcessIO, PluginClient};
-use tarpc::serde_transport;
+use anyhow::anyhow;
+use service::{init_tracing, PluginClient};
+use std::{env::args, net::Ipv6Addr};
+use tarpc::{client, context};
 use tokio_serde::formats::Bincode;
-use tokio_util::codec::LengthDelimitedCodec;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
-    let merged_io = MergedProcessIO::new();
+    init_tracing("Starship Example Plugin")?;
 
-    let codec_builder = LengthDelimitedCodec::builder();
-    let framed = codec_builder.new_framed(merged_io);
-    let transport = serde_transport::new(framed, Bincode::default());
-    PluginClient::new(Default::default(), transport)
-        .spawn()
-        .hello(tarpc::context::current(), "matchai".to_string())
+    let port = args().nth(1).ok_or_else(|| anyhow!("Port required."))?;
+    let server_addr = (Ipv6Addr::LOCALHOST, port.parse()?);
+    let transport = tarpc::serde_transport::tcp::connect(server_addr, Bincode::default);
+
+    let client = PluginClient::new(client::Config::default(), transport.await?).spawn();
+    let output = client
+        .hello(context::current(), "matchai".to_string())
         .await?;
+
+    tracing::info!("{:?}", output);
 
     Ok(())
 }
