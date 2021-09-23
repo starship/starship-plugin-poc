@@ -6,7 +6,7 @@ use tokio_serde::formats::Bincode;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
-    init_tracing("Starship Example Plugin")?;
+    init_tracing("starship_plugin")?;
 
     let port = args().nth(1).ok_or_else(|| anyhow!("Port required."))?;
     let addr = (Ipv6Addr::LOCALHOST, port.parse()?);
