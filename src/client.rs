@@ -6,7 +6,7 @@ use tokio_serde::formats::Bincode;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
-    init_tracing("starship_plugin")?;
+    init_tracing()?;
 
     let port = args().nth(1).ok_or_else(|| anyhow!("Port required."))?;
     let addr = (Ipv6Addr::LOCALHOST, port.parse()?);
@@ -17,7 +17,6 @@ async fn main() -> anyhow::Result<()> {
     client
         .hello(context::current(), "matchai".to_string())
         .await?;
-
     client
         .hello(context::current(), "matchai2".to_string())
         .await?;

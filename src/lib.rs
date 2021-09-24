@@ -7,7 +7,7 @@ pub trait Plugin {
     async fn hello(name: String) -> String;
 }
 
-pub fn init_tracing(service_name: &str) -> anyhow::Result<()> {
+pub fn init_tracing() -> anyhow::Result<()> {
     tracing_subscriber::registry()
         .with(tracing_subscriber::EnvFilter::from_default_env())
         .with(tracing_subscriber::fmt::layer().with_span_events(FmtSpan::NEW | FmtSpan::CLOSE))
