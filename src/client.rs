@@ -18,7 +18,7 @@ async fn main() -> anyhow::Result<()> {
         .hello(context::current(), "matchai".to_string())
         .await?;
     client
-        .hello(context::current(), "matchai2".to_string())
+        .current_dir(context::current())
         .await?;
 
     Ok(())

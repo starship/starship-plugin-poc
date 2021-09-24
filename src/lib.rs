@@ -1,3 +1,5 @@
+use std::path::PathBuf;
+
 use tracing_subscriber::{fmt::format::FmtSpan, prelude::*};
 
 /// This is the service definition. It looks a lot like a trait definition.
@@ -5,6 +7,7 @@ use tracing_subscriber::{fmt::format::FmtSpan, prelude::*};
 #[tarpc::service]
 pub trait Plugin {
     async fn hello(name: String) -> String;
+    async fn current_dir() -> Result<PathBuf, String>;
 }
 
 pub fn init_tracing() -> anyhow::Result<()> {
