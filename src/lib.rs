@@ -1,4 +1,7 @@
-use std::path::PathBuf;
+use anyhow::anyhow;
+use std::{env, net::Ipv6Addr, path::PathBuf};
+use tarpc::{client, serde_transport::tcp};
+use tokio_serde::formats::Bincode;
 
 use tracing_subscriber::{fmt::format::FmtSpan, prelude::*};
 
@@ -8,6 +11,24 @@ use tracing_subscriber::{fmt::format::FmtSpan, prelude::*};
 pub trait Plugin {
     async fn hello(name: String) -> String;
     async fn current_dir() -> Result<PathBuf, String>;
+}
+
+impl PluginClient {
+    /// Initialize a plugin client:
+    /// - Initialize tracing for the plugin
+    /// - Connect to the plugin server by the provided port
+    /// - Configure the TCP transport
+    pub async fn try_init() -> anyhow::Result<Self> {
+        init_tracing()?;
+        let port = env::args()
+            .nth(1)
+            .ok_or_else(|| anyhow!("Port required."))?;
+        let addr = (Ipv6Addr::LOCALHOST, port.parse()?);
+
+        let transport = tcp::connect(addr, Bincode::default).await?;
+        let plugin_client = PluginClient::new(client::Config::default(), transport).spawn();
+        Ok(plugin_client)
+    }
 }
 
 pub fn init_tracing() -> anyhow::Result<()> {
