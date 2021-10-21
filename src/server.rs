@@ -1,11 +1,7 @@
 use futures::{future, StreamExt};
 use service::{init_tracing, Plugin};
 use std::{env::current_dir, net::SocketAddr, path::PathBuf, process::Stdio};
-use tarpc::{
-    context,
-    serde_transport::tcp,
-    server::{BaseChannel, Incoming},
-};
+use tarpc::{context, serde_transport::tcp, server::{BaseChannel, incoming::Incoming}};
 use tokio::process::Command;
 use tokio_serde::formats::Bincode;
 
@@ -27,6 +23,8 @@ async fn main() -> anyhow::Result<()> {
     init_tracing()?;
 
     let plugin_list = vec![
+        "./target/debug/client",
+        "./target/debug/client",
         "./target/debug/client",
         "./target/debug/client",
         "./target/debug/client",
