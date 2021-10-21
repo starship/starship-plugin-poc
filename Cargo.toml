@@ -7,12 +7,12 @@ edition = "2021"
 [dependencies]
 anyhow = "1"
 futures = "0.3"
-log = "0.4.14"
+log = "0.4"
 tarpc = { version = "0.27", features = ["serde1", "serde-transport", "tcp"] }
 tokio = { version = "1", features = ["macros", "process"] }
-tokio-serde = { version = "0.8.0", features = ["bincode"] }
-tracing = "0.1.28"
-tracing-subscriber = "0.2.24"
+tokio-serde = { version = "0.8", features = ["bincode"] }
+tracing = "0.1"
+tracing-subscriber = "0.2"
 
 [lib]
 name = "service"
