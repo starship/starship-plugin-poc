@@ -1,9 +1,11 @@
-use anyhow::anyhow;
-use std::{env, net::Ipv6Addr, path::PathBuf};
-use tarpc::{client, serde_transport::tcp};
+use interprocess::nonblocking::local_socket::LocalSocketStream;
+use std::path::PathBuf;
+use tarpc::{client, serde_transport::Transport};
 use tokio_serde::formats::Bincode;
-
-use tracing_subscriber::{fmt::format::FmtSpan, prelude::*};
+use tokio_util::compat::FuturesAsyncReadCompatExt;
+use tracing_subscriber::{
+    fmt::format::FmtSpan, prelude::__tracing_subscriber_SubscriberExt, util::SubscriberInitExt,
+};
 
 /// This is the service definition. It looks a lot like a trait definition.
 /// It defines one RPC, hello, which takes one arg, name, and returns a String.
@@ -20,12 +22,12 @@ impl PluginClient {
     /// - Configure the TCP transport
     pub async fn try_init() -> anyhow::Result<Self> {
         init_tracing()?;
-        let port = env::args()
-            .nth(1)
-            .ok_or_else(|| anyhow!("Port required."))?;
-        let addr = (Ipv6Addr::LOCALHOST, port.parse()?);
+        let stream = LocalSocketStream::connect("/tmp/starship.sock")
+            .await
+            .unwrap();
+        let stream = stream.compat();
+        let transport = Transport::from((stream, Bincode::default()));
 
-        let transport = tcp::connect(addr, Bincode::default).await?;
         let plugin_client = PluginClient::new(client::Config::default(), transport).spawn();
         Ok(plugin_client)
     }

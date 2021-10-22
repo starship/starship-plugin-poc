@@ -1,9 +1,15 @@
 use futures::{future, StreamExt};
+use interprocess::nonblocking::local_socket::LocalSocketListener;
 use service::{init_tracing, Plugin};
-use std::{env::current_dir, net::SocketAddr, path::PathBuf, process::Stdio};
-use tarpc::{context, serde_transport::tcp, server::{BaseChannel, incoming::Incoming}};
+use std::{env::current_dir, path::PathBuf, process::Stdio};
+use tarpc::{
+    context,
+    serde_transport::Transport,
+    server::{incoming::Incoming, BaseChannel},
+};
 use tokio::process::Command;
 use tokio_serde::formats::Bincode;
+use tokio_util::compat::FuturesAsyncReadCompatExt;
 
 #[derive(Clone)]
 struct PluginServer;
@@ -35,15 +41,11 @@ async fn main() -> anyhow::Result<()> {
         "./target/debug/client",
     ];
 
-    let socket_addr = spawn_plugin_server().await?;
-    let server_port = socket_addr.port().to_string();
+    spawn_plugin_server().await?;
 
     let mut plugin_handles = Vec::with_capacity(plugin_list.len());
     for plugin in plugin_list {
-        let mut child = Command::new(plugin)
-            .arg(&server_port)
-            .stdin(Stdio::null())
-            .spawn()?;
+        let mut child = Command::new(plugin).stdin(Stdio::null()).spawn()?;
 
         plugin_handles.push(tokio::spawn(async move { child.wait().await }));
     }
@@ -55,17 +57,17 @@ async fn main() -> anyhow::Result<()> {
 
 /// Spawn an instance of the Starship plugin server, providing the socket address
 /// for clients to connect to.
-async fn spawn_plugin_server() -> anyhow::Result<SocketAddr> {
-    let listener = tcp::listen("localhost:0", Bincode::default)
+async fn spawn_plugin_server() -> anyhow::Result<()> {
+    let listener = LocalSocketListener::bind("/tmp/starship.sock")
         .await?
-        .filter_map(|r| async { r.ok() });
-
-    let socket_addr = listener.get_ref().local_addr();
+        .incoming()
+        .filter_map(|r| async { r.ok() })
+        .map(|r| Transport::from((r.compat(), Bincode::default())));
 
     let plugin_server = listener
         .map(BaseChannel::with_defaults)
         .execute(PluginServer.serve());
     tokio::spawn(plugin_server);
 
-    Ok(socket_addr)
+    Ok(())
 }
