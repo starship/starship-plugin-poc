@@ -26,5 +26,5 @@ name = "server"
 path = "src/server.rs"
 
 [[bin]]
-name = "client"
-path = "src/client.rs"
+name = "starship-plugin-directory"
+path = "src/modules/directory.rs"

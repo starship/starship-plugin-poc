@@ -1,14 +1,30 @@
-use std::{ffi::OsStr, pin::Pin, process::Stdio, task::Poll};
+use std::{ffi::OsStr, path::PathBuf, pin::Pin, process::Stdio, task::Poll};
+use tarpc::serde_transport;
 use tokio::{
     io::{AsyncRead, AsyncWrite, Stdin, Stdout},
     process::{ChildStdin, ChildStdout, Command},
 };
+use tokio_serde::formats::Bincode;
+use tokio_util::codec::LengthDelimitedCodec;
 
-/// This is the service definition. It looks a lot like a trait definition.
-/// It defines one RPC, hello, which takes one arg, name, and returns a String.
+/// The definition of the common API contract between the server and clients
+/// Replaces the need for a Protobuf DSL, or anything like that
 #[tarpc::service]
 pub trait Plugin {
-    async fn hello(name: String) -> String;
+    async fn current_dir() -> PathBuf;
+    async fn output(output: String);
+}
+
+impl PluginClient {
+    /// Initialize an RPC client to communicate with the plugin server
+    pub fn init() -> Self {
+        let merged_io = MergedProcessIO::new();
+
+        let codec_builder = LengthDelimitedCodec::builder();
+        let framed = codec_builder.new_framed(merged_io);
+        let transport = serde_transport::new(framed, Bincode::default());
+        Self::new(Default::default(), transport).spawn()
+    }
 }
 
 /// Merged stdin and stdout of a child process to provide `AsyncRead` and

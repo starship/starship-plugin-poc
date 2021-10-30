@@ -9,5 +9,14 @@
 
 These are the main goals of this POC:
 
-- [ ] Create a clear API for IPC between Starship and its plugins
+- [x] Create an API for IPC between Starship and its plugins
 - [ ] Compare performance between pipe and socket-based IPC
+
+## Try it out
+
+You can run the proof-of-concept locally with the following:
+
+```sh
+# Build all executables and run the server
+cargo build && cargo run --bin server
+```
