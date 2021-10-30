@@ -9,8 +9,8 @@ use tracing_subscriber::{fmt::format::FmtSpan, prelude::*};
 /// It defines one RPC, hello, which takes one arg, name, and returns a String.
 #[tarpc::service]
 pub trait Plugin {
-    async fn hello(name: String) -> String;
-    async fn current_dir() -> Result<PathBuf, String>;
+    async fn current_dir() -> PathBuf;
+    async fn output(output: String);
 }
 
 impl PluginClient {
