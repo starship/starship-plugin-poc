@@ -1,12 +1,12 @@
-use futures::future;
-use service::{MergedChildIO, Plugin};
-use std::{env, path::PathBuf};
+use std::path::PathBuf;
+
+use starship_plugins_poc::{MergedChildIO, Plugin};
 use tarpc::{
     context::Context,
     serde_transport,
     server::{BaseChannel, Channel},
+    tokio_serde::formats::Bincode,
 };
-use tokio_serde::formats::Bincode;
 use tokio_util::codec::LengthDelimitedCodec;
 
 #[derive(Clone)]
@@ -19,7 +19,7 @@ struct PluginServer;
 impl Plugin for PluginServer {
     /// Retreive the current working directory.
     async fn current_dir(self, _: Context) -> PathBuf {
-        env::current_dir().expect("could not retreive current dir")
+        std::env::current_dir().expect("could not retreive current dir")
     }
 
     /// Provide the output for this module.
@@ -31,11 +31,11 @@ impl Plugin for PluginServer {
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     let mut plugin_handles = Vec::with_capacity(20);
-    
+
     // We're going to try spawning 20 plugins
     for _ in 1..20 {
         // Spawn child process
-        let merged_io = MergedChildIO::new("./target/debug/starship-plugin-directory");
+        let merged_io = MergedChildIO::new("./target/release/client");
 
         // Initialize RPC
         let codec_builder = LengthDelimitedCodec::builder();
@@ -47,7 +47,7 @@ async fn main() -> anyhow::Result<()> {
         plugin_handles.push(tokio::spawn(fut));
     }
 
-    future::join_all(plugin_handles).await;
+    futures::future::join_all(plugin_handles).await;
 
     Ok(())
 }
