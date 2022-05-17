@@ -1,5 +1,6 @@
 use std::path::PathBuf;
 
+use async_std::task;
 use starship_plugins_poc::{MergedChildIO, Plugin};
 use tarpc::{
     context::Context,
@@ -28,12 +29,13 @@ impl Plugin for PluginServer {
     }
 }
 
-#[tokio::main]
+#[async_std::main]
 async fn main() -> anyhow::Result<()> {
-    let mut plugin_handles = Vec::with_capacity(20);
+    const NUM_RUNS: usize = 10;
+    let mut plugin_handles = Vec::with_capacity(NUM_RUNS);
 
     // We're going to try spawning 20 plugins
-    for _ in 1..20 {
+    for _ in 0..NUM_RUNS {
         // Spawn child process
         let merged_io = MergedChildIO::new("./target/release/client");
 
@@ -44,7 +46,7 @@ async fn main() -> anyhow::Result<()> {
         let fut = BaseChannel::with_defaults(transport).execute(PluginServer.serve());
 
         // Add to list of concurrent handles
-        plugin_handles.push(tokio::spawn(fut));
+        plugin_handles.push(task::spawn(fut));
     }
 
     futures::future::join_all(plugin_handles).await;

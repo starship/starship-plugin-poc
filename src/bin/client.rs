@@ -12,8 +12,5 @@ async fn main() -> anyhow::Result<()> {
     // Perform an RPC call providing the module's output
     client.output(context, dir).await?;
 
-    // // Printing something is necessary to end the process
-    // // Hangs indefinitely without it. ¯\_(ツ)_/¯
-    // println!("Done!");
     Ok(())
 }

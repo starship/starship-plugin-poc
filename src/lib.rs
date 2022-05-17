@@ -26,6 +26,8 @@ impl PluginClient {
     }
 }
 
+/// An instance of merged child process stdio used to implement `AsyncRead` and
+/// `AsyncWrite`, as required by `serde_transport` for use as a transport for tarpc.
 struct MergedProcessIO {
     stdout: tokio_util::compat::Compat<async_std::io::Stdout>,
     stdin: tokio_util::compat::Compat<async_std::io::Stdin>,
@@ -92,6 +94,8 @@ impl MergedChildIO {
             .spawn()
             .expect("child spawned correctly");
 
+        // Make async_std's futures-io::AsyncRead/Write stdio tokio-compatible
+        // using tokio-util::compat
         let stdin = command
             .stdin
             .expect("Could not capture stdin")
