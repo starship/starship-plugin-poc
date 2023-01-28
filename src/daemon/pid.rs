@@ -1,7 +1,7 @@
 use crate::DATA_DIR;
 use std::{fs, process};
 
-use anyhow::Result;
+use anyhow::{bail, Result};
 
 pub(crate) fn create_pid_file() -> Result<()> {
     let pid_path = DATA_DIR.join("starship.pid");
@@ -14,14 +14,15 @@ pub(crate) fn create_pid_file() -> Result<()> {
         // If the process is still running, we should return an error.
         let process = psutil::process::Process::new(pid);
         if process.is_ok() && process?.is_running() {
-            return Err(anyhow::anyhow!(
+            bail!(
                 "Pid file already exists and another daemon seems to be running.\n\
                 Please stop the daemon beforehand or delete the file manually: {pid_path:?}",
-            ));
+                pid_path = pid_path
+            );
         }
     }
 
-    // Write the pid to the pid file.
+    // Write the pid to the file.
     fs::write(pid_path.as_path(), format!("{}", process::id()))?;
 
     Ok(())
