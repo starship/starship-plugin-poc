@@ -1,3 +1,8 @@
+// ! The server's responsibilities are the following:
+// ! - Manage the lifecycle of the plugin processes
+// ! - Maintain an in-memory cache of previous prompt calculations
+// ! - Provide an interface for async prompts to continue being calculated
+
 use futures::{future, StreamExt};
 use service::{init_tracing, Plugin};
 use std::{env, net::SocketAddr, path::PathBuf, process::Stdio};
