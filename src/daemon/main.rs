@@ -5,6 +5,7 @@ use once_cell::sync::Lazy;
 use shellexpand::tilde;
 
 mod pid;
+mod socket;
 
 pub static CACHE_DIR: Lazy<PathBuf> =
     Lazy::new(|| PathBuf::from(tilde("~/.cache/starship").into_owned()));
@@ -13,10 +14,16 @@ pub static CONFIG_DIR: Lazy<PathBuf> =
 pub static DATA_DIR: Lazy<PathBuf> =
     Lazy::new(|| PathBuf::from(tilde("~/.local/share/starship").into_owned()));
 
-fn main() -> Result<()> {
-    init_directories()?;
+pub static SOCKET_PATH: Lazy<PathBuf> = Lazy::new(|| DATA_DIR.join("starship.sock"));
 
+#[tokio::main]
+async fn main() -> Result<()> {
+    pretty_env_logger::init();
+
+    init_directories()?;
     pid::create_pid_file()?;
+
+    socket::accept_incoming().await?;
 
     Ok(())
 }
