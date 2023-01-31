@@ -1,16 +1,21 @@
-use anyhow::anyhow;
-use std::{env, net::Ipv6Addr, path::PathBuf};
-use tarpc::{client, serde_transport::tcp};
-use tokio_serde::formats::Bincode;
+use once_cell::sync::Lazy;
+use std::{
+    net::{Ipv4Addr, SocketAddr, SocketAddrV4},
+    path::PathBuf,
+};
+use tarpc::{client, serde_transport::tcp, tokio_serde::formats::Bincode};
 
 use tracing_subscriber::{fmt::format::FmtSpan, prelude::*};
+
+pub static SOCKET_ADDR: Lazy<SocketAddr> =
+    Lazy::new(|| SocketAddrV4::new(Ipv4Addr::LOCALHOST, 27812).into());
 
 /// This is the service definition. It looks a lot like a trait definition.
 /// It defines one RPC, hello, which takes one arg, name, and returns a String.
 #[tarpc::service]
 pub trait Plugin {
     async fn current_dir() -> PathBuf;
-    async fn output(output: String);
+    async fn output(output: String) -> ();
 }
 
 impl PluginClient {
@@ -20,12 +25,8 @@ impl PluginClient {
     /// - Configure the TCP transport
     pub async fn try_init() -> anyhow::Result<Self> {
         init_tracing()?;
-        let port = env::args()
-            .nth(1)
-            .ok_or_else(|| anyhow!("Port required."))?;
-        let addr = (Ipv6Addr::LOCALHOST, port.parse()?);
 
-        let transport = tcp::connect(addr, Bincode::default).await?;
+        let transport = tcp::connect(*SOCKET_ADDR, Bincode::default).await?;
         let plugin_client = PluginClient::new(client::Config::default(), transport).spawn();
         Ok(plugin_client)
     }

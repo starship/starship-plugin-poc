@@ -1,38 +1,30 @@
-use std::net::{Ipv4Addr, SocketAddr, SocketAddrV4};
+use std::future;
 
-use anyhow::{Context, Result};
-use log::{error, info};
-use tokio::net::{TcpListener, TcpStream};
+use anyhow::Result;
+use futures::StreamExt;
+use log::info;
+use service::{Plugin, SOCKET_ADDR};
+use tarpc::{
+    serde_transport::tcp,
+    server::{BaseChannel, Channel},
+    tokio_serde::formats::Bincode,
+};
+
+use crate::server::PluginServer;
 
 pub(crate) async fn accept_incoming() -> Result<()> {
     // TODO: Use Unix Domain Sockets over TCP if possible.
 
-    let address = SocketAddrV4::new(Ipv4Addr::LOCALHOST, 27812);
-    info!("Listening on {address}");
+    let listener = tcp::listen(*SOCKET_ADDR, Bincode::default).await?;
+    info!("Listening on {}", *SOCKET_ADDR);
 
-    let listener = TcpListener::bind(address)
-        .await
-        .with_context(|| format!("Failed bind to address: {address}"))?;
+    listener
+        .filter_map(|r| future::ready(r.ok()))
+        .map(BaseChannel::with_defaults)
+        .map(|channel| channel.execute(PluginServer.serve()))
+        .buffer_unordered(10)
+        .for_each(|_| async {})
+        .await;
 
-    loop {
-        // Poll incoming connections.
-        let (stream, addr) = match listener.accept().await {
-            Ok((stream, addr)) => {
-                info!("Accepted connection from {addr}");
-                (stream, addr)
-            }
-            Err(e) => {
-                error!("Failed to accept incoming connection: {e}");
-                continue;
-            }
-        };
-
-        tokio::spawn(async move {
-            let _result = handle_incoming(stream, addr).await;
-        });
-    }
-}
-
-async fn handle_incoming(stream: TcpStream, addr: SocketAddr) -> Result<()> {
-    todo!()
+    Ok(())
 }

@@ -6,6 +6,7 @@ use shellexpand::tilde;
 
 mod pid;
 mod socket;
+mod server;
 
 pub static CACHE_DIR: Lazy<PathBuf> =
     Lazy::new(|| PathBuf::from(tilde("~/.cache/starship").into_owned()));
