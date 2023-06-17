@@ -1,12 +1,9 @@
 use std::{fs, path::PathBuf};
 
 use anyhow::Result;
+use extism::{Context, CurrentPlugin, Function, Plugin, UserData, Val, ValType};
 use once_cell::sync::Lazy;
 use shellexpand::tilde;
-
-mod pid;
-mod socket;
-mod server;
 
 pub static CACHE_DIR: Lazy<PathBuf> =
     Lazy::new(|| PathBuf::from(tilde("~/.cache/starship").into_owned()));
@@ -17,15 +14,27 @@ pub static DATA_DIR: Lazy<PathBuf> =
 
 pub static SOCKET_PATH: Lazy<PathBuf> = Lazy::new(|| DATA_DIR.join("starship.sock"));
 
-#[tokio::main]
-async fn main() -> Result<()> {
+fn main() -> Result<()> {
     pretty_env_logger::init();
 
     init_directories()?;
-    pid::create_pid_file()?;
 
-    socket::accept_incoming().await?;
+    let wasm = include_bytes!("../../target/wasm32-unknown-unknown/release/plugin.wasm");
+    let context = Context::new();
 
+    let mut plugin = Plugin::new(&context, wasm, [current_dir], false)?;
+    let data = plugin.call("current_dir", "").unwrap();
+
+    Ok(())
+}
+
+fn current_dir(
+    _plugin: &mut CurrentPlugin,
+    _inputs: &[Val],
+    outputs: &mut [Val],
+    _user_data: UserData,
+) -> Result<()> {
+    // outputs[0] = std::env::current_dir().unwrap().to_str().unwrap().into();
     Ok(())
 }
 
