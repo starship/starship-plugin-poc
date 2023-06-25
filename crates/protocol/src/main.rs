@@ -11,7 +11,7 @@ fp_import! {}
 // Plugin functions available to the daemon
 fp_export! {
     fn metadata() -> Metadata;
-    async fn output() -> String;
+    fn output() -> String;
 }
 
 fn main() {

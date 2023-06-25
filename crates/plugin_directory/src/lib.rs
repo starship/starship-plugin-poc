@@ -1,4 +1,6 @@
-#[fp_export_impl(protocol)]
+use starship_plugin::*;
+
+#[fp_export_impl(starship_plugin)]
 fn metadata() -> Metadata {
     Metadata {
         name: "directory".to_string(),
@@ -6,7 +8,7 @@ fn metadata() -> Metadata {
     }
 }
 
-#[fp_export_impl(protocol)]
-async fn output() -> String {
+#[fp_export_impl(starship_plugin)]
+fn output() -> String {
     "~".to_string()
 }

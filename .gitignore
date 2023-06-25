@@ -1,5 +1,8 @@
-/target
-/crates/starship_plugin
-/crates/daemon/src/plugin_runtime
+# Build artifacts
+target
+crates/protocol/target
 
-/crates/protocol/target
+# Generated artifacts
+crates/starship_plugin
+crates/daemon/src/plugin_runtime/bindings.rs
+crates/daemon/src/plugin_runtime/types.rs
