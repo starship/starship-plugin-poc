@@ -1,1 +1,5 @@
 /target
+/crates/starship_plugin
+/crates/daemon/src/plugin_runtime
+
+/crates/protocol/target

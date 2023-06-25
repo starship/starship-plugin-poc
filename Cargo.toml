@@ -1,6 +1,3 @@
 [workspace]
-
-members = [
-    "daemon",
-    "plugin"
-]
+exclude = ["crates/protocol"]
+members = ["crates/daemon", "crates/plugin_directory"]
