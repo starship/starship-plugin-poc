@@ -6,7 +6,9 @@ mod types;
 pub use types::*;
 
 // Daemon functions available to the plugin
-fp_import! {}
+fp_import! {
+    fn current_dir();
+}
 
 // Plugin functions available to the daemon
 fp_export! {

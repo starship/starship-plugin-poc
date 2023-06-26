@@ -10,5 +10,6 @@ fn metadata() -> Metadata {
 
 #[fp_export_impl(starship_plugin)]
 fn output() -> String {
-    "~".to_string()
+    current_dir();
+    "test".to_string()
 }
