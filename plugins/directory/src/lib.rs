@@ -1,11 +1,11 @@
-use starship_bindings::*;
+use starship_plugin::*;
 
-#[fp_export_impl(starship_bindings)]
+#[fp_export_impl(starship_plugin)]
 fn version() -> [u8; 3] {
     [0, 1, 0]
 }
 
-#[fp_export_impl(starship_bindings)]
+#[fp_export_impl(starship_plugin)]
 fn metadata() -> PluginMetadata {
     PluginMetadata {
         name: "directory".to_string(),
@@ -13,7 +13,7 @@ fn metadata() -> PluginMetadata {
     }
 }
 
-#[fp_export_impl(starship_bindings)]
+#[fp_export_impl(starship_plugin)]
 async fn output() -> String {
     current_dir()
 }

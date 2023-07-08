@@ -7,4 +7,4 @@ edition = "2021"
 crate-type = ["cdylib"]
 
 [dependencies]
-starship_bindings = { version = "0.1.0", path = "../../crates/protocol/bindings/rust-plugin" }
+starship_plugin = { path = "../../crates/starship_plugin" }

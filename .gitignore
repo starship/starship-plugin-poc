@@ -1,3 +1,7 @@
 # Build artifacts
-bindings
 target
+
+# Generated artifacts
+crates/starship_plugin
+crates/daemon/src/plugin_runtime/bindings.rs
+crates/daemon/src/plugin_runtime/types.rs

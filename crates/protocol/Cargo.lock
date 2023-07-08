@@ -473,7 +473,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "starship-plugin-protocol"
+name = "starship_plugin_protocol"
 version = "0.1.0"
 dependencies = [
  "fp-bindgen",

@@ -17,30 +17,26 @@ fp_export! {
 }
 
 fn main() {
-    for bindings_type in [
-        BindingsType::RustPlugin(
-            RustPluginConfig::builder()
-                .name("starship_bindings")
-                .description("Bindings for the Starship plugin protocol")
-                .version("0.1.0")
-                .license("ISC")
-                .dependency(
-                    "fp-bindgen-support",
-                    CargoDependency::with_version_and_features(
-                        "3.0.0",
-                        BTreeSet::from(["async", "guest"]),
-                    ),
-                )
-                .build(),
-        ),
-        BindingsType::RustWasmer2Runtime,
-    ] {
-        let output_path = format!("bindings/{bindings_type}");
+    // Generate bindings for plugin authors
+    let plugin_config = RustPluginConfig::builder()
+        .name("starship_plugin")
+        .description("Bindings used to create a starship plugin")
+        .version("0.1.0")
+        // `fp-bindgen` automatically adds `fp-bindgen-support` as a dependency
+        // but doesn't include the `async` feature when needed.
+        .dependency(
+            "fp-bindgen-support",
+            CargoDependency::with_version_and_features("3.0.0", BTreeSet::from(["async", "guest"])),
+        )
+        .build();
+    fp_bindgen!(BindingConfig {
+        bindings_type: BindingsType::RustPlugin(plugin_config),
+        path: "../starship_plugin"
+    });
 
-        fp_bindgen!(BindingConfig {
-            bindings_type,
-            path: &output_path
-        });
-        println!("Generated bindings written to `{output_path}/`.");
-    }
+    // Generate bindings for plugin authors
+    fp_bindgen!(BindingConfig {
+        bindings_type: BindingsType::RustWasmer2Runtime,
+        path: "../daemon/src/plugin_runtime",
+    });
 }

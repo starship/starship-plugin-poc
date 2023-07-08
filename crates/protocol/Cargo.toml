@@ -4,12 +4,6 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-fp-bindgen = { version = "3.0.0", features = [
-  "bytes-compat",
-  "http-compat",
-  "serde-bytes-compat",
-  "time-compat",
-  "generators",
-] }
+fp-bindgen = { version = "3.0.0", features = ["generators"] }
 serde = { version = "1.0.167", features = ["derive"] }
 serde_bytes = "0.11.11"

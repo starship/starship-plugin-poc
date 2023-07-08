@@ -1,9 +1,9 @@
 use anyhow::Result;
-use bindings::Runtime;
+use plugin_runtime::Runtime;
 use tokio::io::AsyncWriteExt;
 use tokio::net::TcpListener;
 
-mod bindings;
+mod plugin_runtime;
 
 #[tokio::main]
 async fn main() -> Result<()> {

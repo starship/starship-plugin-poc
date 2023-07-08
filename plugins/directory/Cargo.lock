@@ -167,7 +167,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "starship_bindings"
+name = "starship_plugin"
 version = "0.1.0"
 dependencies = [
  "fp-bindgen-support",
@@ -180,7 +180,7 @@ dependencies = [
 name = "starship_plugin_directory"
 version = "0.1.0"
 dependencies = [
- "starship_bindings",
+ "starship_plugin",
 ]
 
 [[package]]
