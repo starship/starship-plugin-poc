@@ -15,6 +15,5 @@ fn metadata() -> PluginMetadata {
 
 #[fp_export_impl(starship_bindings)]
 async fn output() -> String {
-    let current_dir = current_dir();
-    format!("Current directory: {}", current_dir)
+    current_dir()
 }
