@@ -1,7 +1,9 @@
 [package]
-name = "starship_protocol"
+name = "starship-plugin-protocol"
 version = "0.1.0"
 edition = "2021"
 
 [dependencies]
 fp-bindgen = { version = "3.0.0", features = ["generators"] }
+serde = { version = "1.0.167", features = ["derive"] }
+serde_bytes = "0.11.11"
