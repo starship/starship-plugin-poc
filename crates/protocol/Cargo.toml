@@ -1,9 +1,15 @@
 [package]
-name = "starship-plugin-protocol"
+name = "starship_plugin_protocol"
 version = "0.1.0"
-edition = "2021"
+edition = "2018"
 
 [dependencies]
-fp-bindgen = { version = "3.0.0", features = ["generators"] }
+fp-bindgen = { version = "3.0.0", features = [
+  "bytes-compat",
+  "http-compat",
+  "serde-bytes-compat",
+  "time-compat",
+  "generators",
+] }
 serde = { version = "1.0.167", features = ["derive"] }
 serde_bytes = "0.11.11"

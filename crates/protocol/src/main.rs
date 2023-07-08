@@ -1,4 +1,6 @@
-use fp_bindgen::prelude::*;
+use std::collections::BTreeSet;
+
+use fp_bindgen::{prelude::*, types::CargoDependency};
 
 mod types;
 use types::*;
@@ -18,10 +20,17 @@ fn main() {
     for bindings_type in [
         BindingsType::RustPlugin(
             RustPluginConfig::builder()
-                .name("starship-plugin")
-                .description("The starship plugin protocol")
+                .name("starship_bindings")
+                .description("Bindings for the Starship plugin protocol")
                 .version("0.1.0")
                 .license("ISC")
+                .dependency(
+                    "fp-bindgen-support",
+                    CargoDependency::with_version_and_features(
+                        "3.0.0",
+                        BTreeSet::from(["async", "guest"]),
+                    ),
+                )
                 .build(),
         ),
         BindingsType::RustWasmer2Runtime,
