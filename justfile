@@ -1,10 +1,10 @@
 default: generate-protocol generate-plugins run
 
 generate-protocol:
-  cd crates/protocol && cargo run
+  cargo run -p starship_plugin_protocol
 
 generate-plugins:
-  cd plugins/directory && cargo build
+  cargo build -p starship_plugin_directory --target=wasm32-unknown-unknown
 
 run:
   cargo run -p starship_daemon

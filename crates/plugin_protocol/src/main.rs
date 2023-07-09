@@ -33,12 +33,12 @@ fn main() {
         .build();
     fp_bindgen!(BindingConfig {
         bindings_type: BindingsType::RustPlugin(plugin_config),
-        path: "../starship_plugin"
+        path: "./crates/starship_plugin"
     });
 
     // Generate bindings for plugin authors
     fp_bindgen!(BindingConfig {
         bindings_type: BindingsType::RustWasmer2Runtime,
-        path: "../daemon/src/plugin_runtime",
+        path: "./crates/daemon/src/plugin_runtime",
     });
 }

@@ -1,0 +1,10 @@
+[package]
+name = "starship"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+anyhow = "1.0"
+tarpc = { version = "0.33.0", features = ["serde-transport", "tcp", "serde-transport-bincode"] }
+tokio = { version = "1.29.1", features = ["macros", "rt-multi-thread", "net", "io-util"] }
+starship_daemon = { path = "../daemon" }
