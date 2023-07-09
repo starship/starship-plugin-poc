@@ -4,6 +4,10 @@ pub use self::bindings::*;
 mod types;
 pub use self::types::*;
 
+fn log(msg: String) {
+    println!("Provider log: {}", msg);
+}
+
 fn current_dir() -> String {
     std::env::current_dir()
         .expect("Failed to get current directory")

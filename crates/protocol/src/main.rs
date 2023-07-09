@@ -6,11 +6,13 @@ mod types;
 use types::*;
 
 fp_import! {
+    fn log(msg: String);
     // TODO: Replace with PathBuf
     fn current_dir() -> String;
 }
 
 fp_export! {
+    fn init();
     fn version() -> [u8; 3];
     fn metadata() -> PluginMetadata;
     async fn output() -> String;

@@ -8,3 +8,4 @@ crate-type = ["cdylib"]
 
 [dependencies]
 starship_plugin = { path = "../../crates/starship_plugin" }
+tracing = "0.1.37"

@@ -181,6 +181,7 @@ name = "starship_plugin_directory"
 version = "0.1.0"
 dependencies = [
  "starship_plugin",
+ "tracing",
 ]
 
 [[package]]

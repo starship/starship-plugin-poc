@@ -51,6 +51,9 @@ async fn main() -> Result<()> {
         let rt = rt.clone();
         tokio::spawn(async move {
             println!("New connection.");
+
+            rt.init().unwrap();
+
             let dir = rt.output().await.unwrap();
             socket.write_all(dir.as_bytes()).await.unwrap();
         });
